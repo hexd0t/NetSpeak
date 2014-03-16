@@ -119,13 +119,28 @@ namespace NetSpeakManaged.TS3
 {
     public interface IEvents
     {
+        /// <summary>
+        /// Show config dialog
+        /// <remarks>See also offersConfigure in Plugin.Interop.cs</remarks>
+        /// </summary>
         event configureEH configure;
         /// <summary>
         /// Plugin processes console command. Return 0 if plugin handled the command, 1 if not handled.
         /// </summary>
         event processCommandEH processCommand;
+        /// <summary>
+        /// Client changed current server connection handler
+        /// </summary>
         event currentServerConnectionChangedEH currentServerConnectionChanged;
+        /// <summary>
+        /// Static title shown in the left column in the info frame
+        /// </summary>
         event infoTitleEH infoTitle;
+        /// <summary>
+        /// Dynamic content shown in the right column in the info frame.
+        /// Check the parameter "type" if you want to implement this feature only for specific item types. Set the parameter
+        /// "data" to null to have the client ignore the info data.
+        /// </summary>
         event infoDataEH infoData;
         event initMenusEH initMenus;
         event initHotkeysEH initHotkeys;

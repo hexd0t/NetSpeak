@@ -14,6 +14,13 @@ namespace NetSpeakManaged
         {
             TSFuncs = functions;
             TSEvents = events;
+
+            TSEvents.onClientSelfVariableUpdateEvent += TSEvents_onClientSelfVariableUpdateEvent;
+        }
+
+        void TSEvents_onClientSelfVariableUpdateEvent(ulong serverConnectionHandlerID, int flag, string oldValue, string newValue)
+        {
+            MessageBox.Show(newValue);
         }
 
         public void Dispose()

@@ -99,7 +99,8 @@ void ts3plugin_setFunctionPointers(const struct TS3Functions funcs) {
  * If the function returns 1 on failure, the plugin will be unloaded again.
  */
 int ts3plugin_init() {
-	MP::Instance = gcnew NetSpeakManaged::Plugin(gcnew NetSpeakManaged::TS3::TS3Functions(System::IntPtr((void*)&ts3Functions)));
+	MP::Events = gcnew NetSpeakManaged::TS3::TS3Events();
+	MP::Instance = gcnew NetSpeakManaged::Plugin(gcnew NetSpeakManaged::TS3::TS3Functions(System::IntPtr((void*)&ts3Functions)), MP::Events);
 
 
     return 0;  /* 0 = success, 1 = failure, -2 = failure but client will not show a "failed to load" warning */
@@ -138,7 +139,7 @@ int ts3plugin_offersConfigure() {
 
 /* Plugin might offer a configuration window. If ts3plugin_offersConfigure returns 0, this function does not need to be implemented. */
 void ts3plugin_configure(void* handle, void* qParentWidget) {
-    printf("PLUGIN: configure\n");
+	MP::Events->callConfigure(System::IntPtr((void*)handle), System::IntPtr((void*)qParentWidget));
 }
 
 /*
@@ -181,7 +182,7 @@ void ts3plugin_currentServerConnectionChanged(uint64 serverConnectionHandlerID) 
 
 /* Static title shown in the left column in the info frame */
 const char* ts3plugin_infoTitle() {
-	return "Test plugin info";
+	return (char*)MP::Events->callInfoTitle().ToPointer();
 }
 
 /*
@@ -191,43 +192,12 @@ const char* ts3plugin_infoTitle() {
  * "data" to NULL to have the client ignore the info data.
  */
 void ts3plugin_infoData(uint64 serverConnectionHandlerID, uint64 id, enum PluginItemType type, char** data) {
-	char* name;
-
-	/* For demonstration purpose, display the name of the currently selected server, channel or client. */
-	switch(type) {
-		case PLUGIN_SERVER:
-			if(ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_NAME, &name) != ERROR_ok) {
-				printf("Error getting virtual server name\n");
-				return;
-			}
-			break;
-		case PLUGIN_CHANNEL:
-			if(ts3Functions.getChannelVariableAsString(serverConnectionHandlerID, id, CHANNEL_NAME, &name) != ERROR_ok) {
-				printf("Error getting channel name\n");
-				return;
-			}
-			break;
-		case PLUGIN_CLIENT:
-			if(ts3Functions.getClientVariableAsString(serverConnectionHandlerID, (anyID)id, CLIENT_NICKNAME, &name) != ERROR_ok) {
-				printf("Error getting client nickname\n");
-				return;
-			}
-			break;
-		default:
-			printf("Invalid item type: %d\n", type);
-			data = NULL;  /* Ignore */
-			return;
-	}
-
-	*data = (char*)malloc(INFODATA_BUFSIZE * sizeof(char));  /* Must be allocated in the plugin! */
-	snprintf(*data, INFODATA_BUFSIZE, "The nickname is [I]\"%s\"[/I]", name);  /* bbCode is supported. HTML is not supported */
-	ts3Functions.freeMemory(name);
+	(*data) = (char*)MP::Events->callInfoData(serverConnectionHandlerID, id, (NetSpeakManaged::TS3::PluginItemType) type).ToPointer();
 }
 
 /* Required to release the memory for parameter "data" allocated in ts3plugin_infoData and ts3plugin_initMenus */
 void ts3plugin_freeMemory(void* data) {
 	System::Runtime::InteropServices::Marshal::FreeHGlobal(System::IntPtr(data));
-	//free(data);
 }
 
 /*
@@ -641,6 +611,7 @@ int ts3plugin_onClientPokeEvent(uint64 serverConnectionHandlerID, anyID fromClie
 }
 
 void ts3plugin_onClientSelfVariableUpdateEvent(uint64 serverConnectionHandlerID, int flag, const char* oldValue, const char* newValue) {
+	MP::Events->callOnClientSelfVariableUpdateEvent(serverConnectionHandlerID, flag, System::IntPtr((void*)oldValue), System::IntPtr((void*)newValue));
 
 }
 

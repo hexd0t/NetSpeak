@@ -17,9 +17,17 @@ namespace NetSpeakManaged
         /// Plugin command keyword. Return NULL or "" if not used.
         /// </summary>
         public static String PluginKeyword { get { return null; } }
-        public static TS3.PluginConfigureOffer OffersConfigure { get { return TS3.PluginConfigureOffer.CONFIGURE_NEW_THREAD; } }
+        /// <summary>
+        /// Tell client if plugin offers a configuration window.
+        /// </summary>
+        public static TS3.PluginConfigureOffer OffersConfigure { get { return TS3.PluginConfigureOffer.NO_CONFIGURE; } }
+        /// <summary>
+        /// 
+        /// </summary>
+        public static bool RequestAutoload { get { return false; } }
 
         //////////////////////////////////////////////////// Plugin resources
+
         /// <summary>
         /// Gets your pluginID. Dont set manually
         /// </summary>
